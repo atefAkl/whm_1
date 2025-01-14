@@ -2,16 +2,50 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * Class Admin
+ * @package App\Models
+ * 
+ * Represents an admin user in the system.
+ * Handles authentication, permissions, and relationships.
+ * 
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string $password
+ * @property int $created_by
+ * @property int $updated_by
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ * @property string|null $remember_token
+ * 
+ * @property-read \App\Models\Admin $creator
+ * @property-read \App\Models\Admin $updater
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Role[] $roles
+ */
 class Admin extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
+
+    /**
+     * The guard for the admin model.
+     *
+     * @var string
+     */
+    protected $guard = 'admin';
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'admins';
 
     /**
      * The attributes that are mass assignable.
@@ -22,6 +56,8 @@ class Admin extends Authenticatable
         'name',
         'email',
         'password',
+        'created_by',
+        'updated_by',
     ];
 
     /**
@@ -41,10 +77,26 @@ class Admin extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'password' => 'string',
     ];
 
-    public function roles()
+    /**
+     * Get the admin who created this admin.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function creator()
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsTo(Admin::class, 'created_by');
+    }
+
+    /**
+     * Get the admin who last updated this admin.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function updater()
+    {
+        return $this->belongsTo(Admin::class, 'updated_by');
     }
 }

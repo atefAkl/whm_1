@@ -4,18 +4,7 @@
 <div class="container pt-3">
     <div class="profile-edit">
 
-        <section class="bg-light p-3 shadowed">
-            <nav>
-                <ul class="nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/roles/create">Roles</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/premissions/create">Permissions</a>
-                    </li>
-                </ul>
-            </nav>
-        </section>
+
         <section class="bg-light p-3 shadowed mt-4">
 
             <h1>Edit Profile</h1>

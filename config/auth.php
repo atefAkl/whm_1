@@ -41,6 +41,10 @@ return [
             'provider' => 'users',
         ],
 
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'admins',
+        ],
 
         'api' => [
             'driver' => 'token',
@@ -51,11 +55,6 @@ return [
         'client' => [
             'driver' => 'sanctum',
             'provider' => 'users',
-        ],
-
-        'admin' => [
-            'driver' => 'sanctum',
-            'provider' => 'admins',
         ],
 
         'provider' => [

@@ -56,9 +56,10 @@
                         <button type="submit" class="btn btn-primary">Login</button>
                     </div>
                 </form>
+                <a href="/admin/dashboard/home">login as admin</a><br />
+                <a href="/">Back to home</a>
             </div>
         </div>
-
     </section>
 </div>
 @endsection

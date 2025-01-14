@@ -3,99 +3,135 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Role;
-use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class RolesController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the roles.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\View\View
      */
     public function index()
     {
-        //
+        $roles = Role::with('permissions')->get();
+        return view('admin.roles.index', compact('roles'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the form for creating a new role.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\View\View
      */
     public function create()
     {
-        //
-        $guards = array_keys(config('auth.guards'));
-        $roles = Role::all();
-        return view('user.roles.create', ['roles' => $roles, 'guards' => $guards]);
+        $permissions = Permission::all();
+        return view('admin.roles.create', compact('permissions'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created role in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
-        //
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'guard_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:roles',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id'
         ]);
 
-        $validated['created_by'] = auth()->user()->id;
+        $role = Role::create(['name' => $validated['name'], 'guard_name' => 'admin']);
 
-        Role::create($validated);
+        if (isset($validated['permissions'])) {
+            $role->syncPermissions($validated['permissions']);
+        }
 
-
-        return redirect()->back()->with('success', 'Role created successfully.');
+        return redirect()->route('admin.roles.index')
+            ->with('success', 'تم إنشاء الدور بنجاح');
     }
 
     /**
-     * Display the specified resource.
+     * Show the form for editing the specified role.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param  \Spatie\Permission\Models\Role  $role
+     * @return \Illuminate\View\View
      */
-    public function show($id)
+    public function edit(Role $role)
     {
-        //
+        $permissions = Permission::all();
+        $rolePermissions = $role->permissions->pluck('id')->toArray();
+        
+        return view('admin.roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
+     * Update the specified role in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param  \Spatie\Permission\Models\Role  $role
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Role $role)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id'
+        ]);
+
+        $role->update(['name' => $validated['name']]);
+        
+        if (isset($validated['permissions'])) {
+            $role->syncPermissions($validated['permissions']);
+        } else {
+            $role->syncPermissions([]);
+        }
+
+        return redirect()->route('admin.roles.index')
+            ->with('success', 'تم تحديث الدور بنجاح');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified role from storage.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param  \Spatie\Permission\Models\Role  $role
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy($id)
+    public function destroy(Role $role)
     {
-        //
+        if($role->name === 'super-admin') {
+            return redirect()->route('admin.roles.index')
+                ->with('error', 'لا يمكن حذف دور المدير العام');
+        }
+
+        $role->delete();
+
+        return redirect()->route('admin.roles.index')
+            ->with('success', 'تم حذف الدور بنجاح');
+    }
+
+    /**
+     * Update role permissions.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Spatie\Permission\Models\Role  $role
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updatePermissions(Request $request, Role $role)
+    {
+        $validated = $request->validate([
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id'
+        ]);
+
+        $role->syncPermissions($validated['permissions'] ?? []);
+
+        return redirect()->back()
+            ->with('success', 'تم تحديث صلاحيات الدور بنجاح');
     }
 }

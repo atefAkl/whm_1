@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الصفحة الرئيسية</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="{{asset('/build/assets/css/app.css')}}" id="language-stylesheet">
 </head>
 
@@ -38,6 +38,40 @@
                         <li class="nav-item">
                             <a class="nav-link h5 fw-bold" href="">{{ __('Order') }}</a>
                         </li>
+                        @auth
+                        <li class="nav-item dropdown">
+                            <a class="nav-link h5 fw-bold dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ asset('build/assets/images/default.user.avatar.png') }}" alt="User Avatar" class="rounded-circle me-2" width="32" height="32">
+                                {{ Auth::user()->name }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                        <i class="fas fa-user me-2"></i> {{ __('Profile') }}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('orders.index') }}">
+                                        <i class="fas fa-shopping-cart me-2"></i> {{ __('Orders') }}
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i> {{ __('Logout') }}
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                        @else
+                        <li class="nav-item">
+                            <a class="nav-link h5 fw-bold" href="{{ route('login') }}">{{ __('Login') }}</a>
+                        </li>
+                        @endauth
+
                     </ul>
                 </div>
             </div>
@@ -55,8 +89,8 @@
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
             $('.navbar-toggler').click(function() {

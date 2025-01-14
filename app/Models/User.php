@@ -41,7 +41,24 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
+
+    /**
+     * Get the orders for the user.
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Check if the user is an admin.
+     */
+    public function isAdmin()
+    {
+        return false; // Implement your admin check logic here
+    }
 
     public function roles()
     {

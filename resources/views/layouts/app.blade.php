@@ -8,9 +8,63 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('build/assets/css/app.css') }}">
+    <style>
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        .toast {
+            background-color: white;
+            min-width: 250px;
+        }
+        .toast.success {
+            border-left: 4px solid #28a745;
+        }
+        .toast.error {
+            border-left: 4px solid #dc3545;
+        }
+        .toast-header {
+            background-color: transparent;
+        }
+    </style>
 </head>
 
 <body style="min-height: 100vh;">
+    <!-- Toast Container -->
+    <div class="toast-container">
+        @if(session('success'))
+        <div class="toast success" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
+            <div class="toast-header">
+                <i class="fas fa-check-circle text-success mr-2"></i>
+                <strong class="mr-auto">Success</strong>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="toast-body">
+                {{ session('success') }}
+            </div>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="toast error" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
+            <div class="toast-header">
+                <i class="fas fa-exclamation-circle text-danger mr-2"></i>
+                <strong class="mr-auto">Error</strong>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="toast-body">
+                {{ session('error') }}
+            </div>
+        </div>
+        @endif
+    </div>
+
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             <a class="navbar-brand" href="{{ route('dashboard') }}">
@@ -58,11 +112,22 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         $(document).ready(function() {
+            // Initialize all toasts
+            $('.toast').toast('show');
+            
+            // Auto hide toasts after 5 seconds
+            setTimeout(function() {
+                $('.toast').toast('hide');
+            }, 5000);
+
+            // Handle manual close
+            $('.toast .close').on('click', function() {
+                $(this).closest('.toast').toast('hide');
+            });
 
             $('#dropdownToggle').click(function(event) {
                 event.stopPropagation(); // Prevent the click from bubbling up to the document
