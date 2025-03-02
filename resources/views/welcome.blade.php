@@ -55,7 +55,9 @@
                                         <i class="fas fa-shopping-cart me-2"></i> {{ __('Orders') }}
                                     </a>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
@@ -68,7 +70,7 @@
                         </li>
                         @else
                         <li class="nav-item">
-                            <a class="nav-link h5 fw-bold" href="{{ route('login') }}">{{ __('Login') }}</a>
+                            <a class="nav-link h5 fw-bold" href="{{ route('admin-login') }}">{{ __('Login') }}</a>
                         </li>
                         @endauth
 

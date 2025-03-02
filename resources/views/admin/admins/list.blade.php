@@ -38,23 +38,24 @@
                             <td>{{ $admin->created_at->format('Y-m-d H:i') }}</td>
                             <td>
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-outline-success manage-roles"
-                                        data-id="{{ $admin->id }}"
-                                        data-name="{{ $admin->name }}"
-                                        data-toggle="modal"
-                                        data-target="#manageRolesModal"
-                                        title="{{ __('messages.Manage Roles') }}">
-                                        <i class="fas fa-user-shield"></i>
-                                    </button>
-                                    <a href="{{ route('edit-admin', $admin->id) }}" class="btn btn-sm btn-outline-warning" title="{{ __('messages.Edit') }}">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-outline-danger delete-admin"
-                                        data-id="{{ $admin->id }}"
-                                        data-name="{{ $admin->name }}"
-                                        title="{{ __('messages.Delete') }}">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <form action="{{ route('admins-destroy', [$admin->id]) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-sm btn-outline-success manage-roles"
+                                            data-id="{{ $admin->id }}"
+                                            data-name="{{ $admin->name }}"
+                                            data-toggle="modal"
+                                            data-target="#manageRolesModal"
+                                            title="{{ __('messages.Manage Roles') }}">
+                                            <i class="fas fa-user-shield"></i>
+                                        </button>
+                                        <a href="{{ route('admins-edit', $admin->id) }}" class="btn btn-sm btn-outline-warning" title="{{ __('messages.Edit') }}">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ __('messages.Delete') }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -80,7 +81,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="manageRolesForm" action="{{ route('admin-assign-roles') }}" method="POST">
+            <form id="manageRolesForm" action="{{ route('admin-assign-roles', ['000']) }}" method="POST">
                 @csrf
                 <input type="hidden" name="admin_id" id="adminId">
                 <div class="modal-body">
@@ -157,11 +158,16 @@
         $('.delete-admin').click(function() {
             var adminId = $(this).data('id');
             var adminName = $(this).data('name');
-
+            let link = '{{ route("admins-destroy", ["000"]) }}';
+            link = link.replace('000', adminId);
+            console.log(link);
             if (confirm('{{ __("messages.Are you sure you want to delete") }} ' + adminName + '?')) {
                 $.ajax({
-                    url: '{{ route("destroy-admin") }}',
+                    url: link,
                     type: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
                     data: {
                         _token: '{{ csrf_token() }}',
                         admin_id: adminId

@@ -17,7 +17,9 @@ class AdminsController extends Controller
      */
     public function index()
     {
-        //
+        $admins = Admin::with('roles')->paginate(10);
+        $roles = Role::where('guard_name', 'admin')->get();
+        return view('admin.admins.list', compact('admins', 'roles'));
     }
 
     /**
@@ -27,7 +29,8 @@ class AdminsController extends Controller
      */
     public function create()
     {
-        //
+        $roles = Role::where('guard_name', 'admin')->get();
+        return view('admin.admins.create', compact('roles'));
     }
 
     /**
@@ -38,7 +41,26 @@ class AdminsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:admins,email',
+            'password' => 'required|min:6|confirmed',
+            'roles' => 'required|array',
+            'roles.*' => 'exists:roles,id'
+        ]);
+
+        return $request->all();
+
+        $admin = Admin::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'status' => true
+        ]);
+
+        $admin->assignRole($request->roles);
+
+        return redirect()->route('admin.admins.index')->with('success', __('Admin created successfully'));
     }
 
     /**
@@ -63,6 +85,30 @@ class AdminsController extends Controller
         $admin = Admin::findOrFail($id);
         $roles = Role::where('guard_name', 'admin')->get();
         return view('admin.admins.edit', compact('admin', 'roles'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $admin = Admin::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:admins,email,' . $admin->id,
+            'roles' => 'required|array',
+            'roles.*' => 'exists:roles,id'
+        ]);
+
+        $admin->update($request->only(['name', 'email']));
+        $admin->syncRoles($request->roles);
+
+        return redirect()->route('admin.admins.index')->with('success', __('Admin updated successfully'));
     }
 
     /**
@@ -102,67 +148,28 @@ class AdminsController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        $admin = Admin::findOrFail($id);
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:admins,email,' . $id,
-            'password' => 'nullable|min:6|confirmed',
-        ]);
-
-        $admin->name = $request->name;
-        $admin->email = $request->email;
-
-        if ($request->filled('password')) {
-            $admin->password = Hash::make($request->password);
-        }
-
-        $admin->save();
-
-        return redirect()->route('admins-index')
-            ->with('success', __('messages.Admin updated successfully'));
-    }
-
-    /**
      * Remove the specified resource from storage.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $admin = Admin::findOrFail($request->admin_id);
+        $admin = Admin::findOrFail($id);
 
-        // Prevent deleting super admin
-        if ($admin->hasRole('Super Admin')) {
-            return response()->json([
-                'success' => false,
-                'message' => __('messages.Cannot delete super admin')
-            ]);
+        if ($admin->id === auth('admin')->id()) {
+            return back()->withError(__('You cannot delete your own account'));
         }
 
         $admin->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => __('messages.Admin deleted successfully')
-        ]);
+        return back()->with('success', __('Admin deleted successfully'));
     }
 
     public function profile()
     {
-        $vars = [
-            'admin' => auth()->guard('admin')->user()
-        ];
-        return view('admin.profile.home', $vars);
+        $admin = auth('admin')->user();
+        return view('admin.admins.profile', compact('admin'));
     }
 
     /**
@@ -170,25 +177,51 @@ class AdminsController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        $id = auth()->guard('admin')->user()->id;
-        $admin = Admin::findOrFail($id);
+        $admin = Admin::findOrFail(auth('admin')->user()->id);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'between:4,32'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:admins,email,' . $id],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:admins,email,' . $admin->id,
+            'phone' => 'nullable|string|max:20',
         ]);
 
-        $admin->name = $validated['name'];
-        $admin->email = $validated['email'];
+        try {
+            $admin->update($request->only(['name', 'email', 'phone']));
+            $admin->profile->update($request->only(['phone']));
+            return back()->with('success', __('Profile updated successfully'));
+        } catch (\Exception $e) {
+            return back()->withError(__('Profile updated successfully' . $e->getMessage()));
+        }
+    }
 
-        // if (!empty($validated['password'])) {
-        //     $admin->password = Hash::make($validated['password']);
-        // }
+    public function settings()
+    {
+        $admin = auth('admin')->user();
+        return view('admin.settings.home', compact('admin'));
+    }
 
+    public function updateSettings(Request $request)
+    {
+        $admin = auth('admin')->user();
+
+        $request->validate([
+            'notification_enabled' => 'boolean',
+            'theme' => 'string|in:light,dark',
+            'language' => 'string|in:ar,en'
+        ]);
+
+        $admin->settings()->update($request->all());
+
+        return back()->with('success', __('Settings updated successfully'));
+    }
+
+    public function toggleStatus($id)
+    {
+        $admin = Admin::findOrFail($id);
+        $admin->status = !$admin->status;
         $admin->save();
 
-        return back()->with('success', 'Profile updated successfully.');
+        return back()->with('success', __('Status updated successfully'));
     }
 
     public function admins()
@@ -227,7 +260,7 @@ class AdminsController extends Controller
     /**
      * Show the settings page.
      */
-    public function settings()
+    public function showSettings()
     {
         if (!auth()->guard('admin')->user()->can('manage-settings')) {
             abort(403, 'Unauthorized action.');

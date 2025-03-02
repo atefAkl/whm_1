@@ -40,21 +40,21 @@
                 <div class="card-body">
                     <div class="list-group">
                         @can('manage-roles')
-                        <a href="{{ route('admin.roles.create') }}" class="list-group-item list-group-item-action">
+                        <a href="{{ route('admin-roles-create') }}" class="list-group-item list-group-item-action">
                             <i class="fas fa-plus-circle mr-2"></i>
                             {{ __('Add New Role') }}
                         </a>
-                        <a href="{{ route('admin.roles.index') }}" class="list-group-item list-group-item-action">
+                        <a href="{{ route('admin-roles-index') }}" class="list-group-item list-group-item-action">
                             <i class="fas fa-user-shield mr-2"></i>
                             {{ __('All Roles') }}
                         </a>
                         @endcan
                         @can('manage-permissions')
-                        <a href="{{ route('admin.permissions.create') }}" class="list-group-item list-group-item-action">
+                        <a href="{{ route('admin-permissions-create') }}" class="list-group-item list-group-item-action">
                             <i class="fas fa-plus-circle mr-2"></i>
                             {{ __('Add New Permission') }}
                         </a>
-                        <a href="{{ route('admin.permissions.index') }}" class="list-group-item list-group-item-action">
+                        <a href="{{ route('admin-permissions-index') }}" class="list-group-item list-group-item-action">
                             <i class="fas fa-key mr-2"></i>
                             {{ __('All Permissions') }}
                         </a>

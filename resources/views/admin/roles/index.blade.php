@@ -15,59 +15,80 @@
                 <div class="card-header">
                     <h3 class="card-title">الأدوار</h3>
                     <div class="card-tools">
-                        <a href="{{ route('admin.roles.create') }}" class="btn btn-primary">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal">
                             <i class="fas fa-plus"></i> إضافة دور جديد
-                        </a>
+                        </button>
                     </div>
                 </div>
                 <div class="card-body">
-                    @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                    @endif
-                    @if(session('error'))
-                    <div class="alert alert-danger">{{ session('error') }}</div>
-                    @endif
-
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
+                    <fieldset>
+                        <legend>{{ __('Roles Management') }}</legend>
+                        <table class="table">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>الاسم</th>
-                                    <th>الصلاحيات</th>
-                                    <th>العمليات</th>
+                                    <th>{{ __('Role Name') }}</th>
+                                    <th>{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($roles as $role)
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $role->name }}</td>
                                     <td>
-                                        @foreach($role->permissions as $permission)
-                                        <span class="badge badge-info">{{ $permission->name }}</span>
-                                        @endforeach
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('admin.roles.edit', $role) }}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-edit"></i> تعديل
-                                        </a>
-                                        @if($role->name !== 'super-admin')
-                                        <form action="{{ route('admin.roles.destroy', $role) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من الحذف؟')">
-                                                <i class="fas fa-trash"></i> حذف
-                                            </button>
-                                        </form>
-                                        @endif
+                                        <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#editRoleModal" data-id="{{ $role->id }}">{{ __('Edit') }}</button>
+                                        <button class="btn btn-danger" onclick="confirmDelete({{ $role->id }})">{{ __('Delete') }}</button>
                                     </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
+                    </fieldset>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Role Modal -->
+<div class="modal fade" id="addRoleModal" tabindex="-1" aria-labelledby="addRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addRoleModalLabel">{{ __('Add New Role') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addRoleForm">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="roleName" class="form-label">{{ __('Role Name') }}</label>
+                        <input type="text" class="form-control" id="roleName" name="roleName" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Role Modal -->
+<div class="modal fade" id="editRoleModal" tabindex="-1" aria-labelledby="editRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editRoleModalLabel">{{ __('Edit Role') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editRoleForm">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-3">
+                        <label for="editRoleName" class="form-label">{{ __('Role Name') }}</label>
+                        <input type="text" class="form-control" id="editRoleName" name="editRoleName" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">{{ __('Save Changes') }}</button>
+                </form>
             </div>
         </div>
     </div>

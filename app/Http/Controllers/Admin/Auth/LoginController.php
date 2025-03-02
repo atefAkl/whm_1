@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Class LoginController
@@ -27,36 +28,57 @@ class LoginController extends Controller
     public function login(): View|RedirectResponse
     {
         if (Auth::guard('admin')->check()) {
-            return redirect()->route('admin-profile');
+            return redirect()->route('admin-dashboard-home');
         }
-        return view('admin.auth.login');
+        return view('auth.login');
     }
 
     /**
      * Handle an admin login request.
      *
-     * Validates the input credentials and attempts to authenticate the admin.
-     * On success, regenerates session and redirects to profile page.
-     * On failure, redirects back with errors.
-     *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function check(Request $request): RedirectResponse
+    public function check(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        try {
+            Log::info('Login attempt', ['email' => $request->email]);
 
-        if (Auth::guard('admin')->attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended(route('admin-profile'));
+            $validated = $request->validate([
+                'email' => 'required|string|email',
+                'password' => 'required|string',
+            ]);
+
+
+            Log::info('Validation passed');
+
+            $credentials = [
+                'email' => $request->email,
+                'password' => $request->password
+            ];
+
+            Log::info('Attempting login with guard: admin');
+
+            if (Auth::guard('admin')->attempt($credentials, $request->boolean('remember'))) {
+                Log::info('Login successful');
+                $request->session()->regenerate();
+
+                return redirect()->intended(route('admin-dashboard-home'));
+            }
+
+            Log::info('Login failed - invalid credentials');
+
+            return back()
+                ->withInput($request->only('email', 'remember'))
+                ->withErrors([
+                    'email' => __('auth.failed'),
+                ]);
+        } catch (\Exception $e) {
+            Log::error('Login error', ['error' => $e->getMessage()]);
+            return back()
+                ->withInput($request->only('email', 'remember'))
+                ->with('error', 'An error occurred during login. Please try again.');
         }
-
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
     }
 
     /**

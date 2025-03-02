@@ -19,11 +19,11 @@
                 </ul>
 
                 <div class="d-flex ml-auto">
-
+                    {{auth()->user()}}
 
                     <div class="d-flex">
-                        <a class="btn btn-outline-secondary me-2" href="{{ route('login') }}">{{ __('Login') }}</a>
-                        <a class="btn btn-outline-secondary" href="{{ route('register') }}">{{ __('Register') }}</a>
+                        <a class="btn btn-outline-secondary me-2" href="{{ route('admin-login') }}">{{ __('Login') }}</a>
+                        <a class="btn btn-outline-secondary" href="{{ route('admin-register') }}">{{ __('Register') }}</a>
                     </div>
 
                 </div>
@@ -38,9 +38,10 @@
 
                 <h1 class="text-center h1">Welcome back</h1>
                 <p>Please log in to your account.</p>
+                <b>Her am i</b>
             </div>
             <div class="col p-5">
-                <form method="POST" action="{{ route('login') }}">
+                <form method="POST" action="{{ route('admin-check-info') }}">
                     @csrf
                     <h1 class="text-center h3">Log in </h1>
                     <input type="hidden" name="guard_name" value="admin">
@@ -56,7 +57,11 @@
                         <button type="submit" class="btn btn-primary">Login</button>
                     </div>
                 </form>
-                <a href="/admin/dashboard/home">login as admin</a><br />
+                @if (auth()->user())
+                <a href="/admin/dashboard/home">Admin Dashboard</a><br />
+                @else
+                <a href="/auth/login">login as admin</a><br />
+                @endIf
                 <a href="/">Back to home</a>
             </div>
         </div>

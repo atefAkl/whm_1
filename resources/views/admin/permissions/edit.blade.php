@@ -1,64 +1,77 @@
 @extends('admin.layouts.app')
 
-@section('title', 'تعديل الصلاحية')
+@section('title', 'إضافة صلاحية جديدة')
 @section('breadcrumb')
-<li class="breadcrumb-item"><a href="{{ route('admin-dashboard-home') }}">Dashboard</a></li>
-<li class="breadcrumb-item"><a href="{{ route('admin.permissions.index') }}">Permissions</a></li>
-<li class="breadcrumb-item active">Edit Permission</li>
+<li class="breadcrumb-item"><a href="{{ route('admin-permissions-index') }}">Permissions</a></li>
+<li class="breadcrumb-item active">{{__('New Permission')}}</li>
 @endsection
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">تعديل الصلاحية: {{ $permission->name }}</h3>
-                    <div class="card-tools">
-                        <a href="{{ route('admin.permissions.index') }}" class="btn btn-default">
-                            <i class="fas fa-arrow-right"></i> رجوع
-                        </a>
-                    </div>
+<div class="container-fluid pt-5">
+
+    <fieldset class="w-50 m-auto">
+        <legend class="">
+            {{__('Add New Permission')}}</h3>
+            <a href="{{ route('admin-permissions-index') }}">
+                <i class="fa fa-home"></i> {{__('Go Back')}}
+            </a>
+        </legend>
+
+        <div class="form m-3 mb-3">
+
+            <form action="{{ route('admin-permissions-store') }}" method="POST">
+                @csrf
+                <div class="input-group mb-2">
+                    <label class="input-group-text" for="name">{{__('Name')}}</label>
+                    <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
+                        value="{{ old('name', $permission) }}" required>
+                    @error('name')
+                    <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
                 </div>
-                <div class="card-body">
-                    @if($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    @endif
-
-                    <form action="{{ route('admin.permissions.update', $permission) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-
-                        <div class="form-group">
-                            <label for="name">اسم الصلاحية</label>
-                            <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
-                                value="{{ old('name', $permission->name) }}" required>
-                            @error('name')
-                            <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label for="description">الوصف</label>
-                            <textarea name="description" id="description" class="form-control @error('description') is-invalid @enderror"
-                                rows="3">{{ old('description', $permission->description) }}</textarea>
-                            @error('description')
-                            <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> حفظ التغييرات
-                        </button>
-                    </form>
+                <div class="input-group mb-2">
+                    <label class="input-group-text" for="guard_name">{{__('Guard Name')}}</label>
+                    <select name="guard_name" id="guard_name" class="form-control @error('guard_name') is-invalid @enderror"
+                        value="{{ old('guard_name', $permission) }}" required>
+                        <option hidden>{{__('Select Guard')}}</option>
+                        @foreach ($guards as $guard)
+                        <option value="{{ $guard }}" {{ $guard == old('guard_name', $permission) ? 'selected' : '' }}>{{ $guard }}</option>
+                        @endforeach
+                    </select>
+                    @error('guard_name')
+                    <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
                 </div>
-            </div>
+                <div class="input-group mb-2">
+                    <label class="input-group-text" for="group">{{__('Group')}}</label>
+                    <select name="group" id="group" class="form-control @error('group') is-invalid @enderror"
+                        value="{{ old('group', $permission) }}" required>
+                        <option value="" disabled selected>{{__('Select Group')}}</option>
+                        @foreach ($groups as $key => $value)
+                        <option value="{{ $key }}" {{ $key == old('group', $permission) ? 'selected' : '' }}>{{ $value }}</option>
+                        @endforeach
+                    </select>
+                    @error('group')
+                    <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="input-group mb-2">
+                    <label class="input-group-text" for="description">{{__('Description')}}</label>
+                    <textarea name="description" id="description" class="form-control @error('description') is-invalid @enderror" rows="3">{{ old('description', $permission) }}</textarea>
+                    @error('description')
+                    <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="btn-group d-flex justify-content-end">
+                    <a class="btn btn-outline-secondary" href="{{ route('admin-permissions-index') }}">
+                        <i class="fa fa-home"></i> {{__('Go Back')}}
+                    </a>
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-save"></i> {{__('Save')}}
+                    </button>
+                </div>
+            </form>
         </div>
-    </div>
+    </fieldset>
 </div>
 @endsection

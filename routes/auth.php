@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\Auth\LoginController;
+use App\Http\Controllers\Admin\Auth\RegisterController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -15,11 +17,17 @@ Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    //Route::post('register', [RegisteredUserController::class, 'store']);
+    Route::post('login/check', [AuthenticatedSessionController::class, 'store']);
 
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
+
+    // Guest routes (login)
+    Route::middleware(['guest:admin', 'admin.guest'])->group(function () {
+        Route::get('auth/login', [LoginController::class, 'login'])->name('admin-login');
+        Route::post('auth/login/check', [LoginController::class, 'check'])->name('admin-check-info');
+    });
+    // Route::get('login', [AuthenticatedSessionController::class, 'create'])
+    //     ->name('login');
 
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
@@ -35,6 +43,11 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 });
 
+// Admin registration (requires special permission)
+Route::middleware(['auth:admin', 'can:register-admins'])->group(function () {
+    Route::get('admin/auth/register', [RegisterController::class, 'register'])->name('admin-register');
+    Route::post('admin/auth/store', [RegisterController::class, 'store'])->name('admin-store');
+});
 
 Route::middleware('auth:admin')->group(
     function () {

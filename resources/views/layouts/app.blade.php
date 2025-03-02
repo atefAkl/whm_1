@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name', 'Laravel') }}</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('build/assets/css/app.css') }}">
     <style>
@@ -15,16 +15,20 @@
             right: 20px;
             z-index: 1050;
         }
+
         .toast {
             background-color: white;
             min-width: 250px;
         }
+
         .toast.success {
             border-left: 4px solid #28a745;
         }
+
         .toast.error {
             border-left: 4px solid #dc3545;
         }
+
         .toast-header {
             background-color: transparent;
         }
@@ -34,7 +38,7 @@
 <body style="min-height: 100vh;">
     <!-- Toast Container -->
     <div class="toast-container">
-        @if(session('success'))
+        @if(session()->any())
         <div class="toast success" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
             <div class="toast-header">
                 <i class="fas fa-check-circle text-success mr-2"></i>
@@ -44,7 +48,7 @@
                 </button>
             </div>
             <div class="toast-body">
-                {{ session('success') }}
+                {{ session()->message() }}
             </div>
         </div>
         @endif
@@ -111,14 +115,18 @@
         @yield('content')
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
         $(document).ready(function() {
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
             // Initialize all toasts
             $('.toast').toast('show');
-            
+
             // Auto hide toasts after 5 seconds
             setTimeout(function() {
                 $('.toast').toast('hide');

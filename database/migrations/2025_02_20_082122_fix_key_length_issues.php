@@ -6,23 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('admins', function (Blueprint $table) {
-            $table->timestamp('email_verified_at')->nullable()->after('email');
+            $table->dropUnique(['email']);
+            $table->string('email', 191)->unique()->change();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('admins', function (Blueprint $table) {
-            $table->dropColumn('email_verified_at');
+            $table->dropUnique(['email']);
+            $table->string('email')->unique()->change();
         });
     }
 };

@@ -30,10 +30,6 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Temporarily disabled authentication check
-        return $next($request);
-
-        /* Authentication check will be re-enabled after setting up roles and permissions
         // Check if user is logged in as admin
         if (!Auth::guard('admin')->check()) {
             return redirect()->route('admin-login')
@@ -44,16 +40,12 @@ class AdminMiddleware
 
         // Check permissions for admin registration routes
         if ($request->routeIs('admin-register') || $request->routeIs('admin-store')) {
-            try {
-                if (!$admin->hasRole('super-admin') && !$admin->hasPermissionTo('register-admins')) {
-                    return redirect()->back()
-                        ->with('error', 'ليس لديك صلاحية لإضافة مسؤولين جدد.');
-                }
-            } catch (\Exception $e) {
+            if (!$admin->hasRole('super-admin') && !$admin->hasPermissionTo('register-admins')) {
                 return redirect()->back()
-                    ->with('error', 'حدث خطأ في التحقق من الصلاحيات.');
+                    ->with('error', 'ليس لديك صلاحية لإضافة مسؤولين جدد.');
             }
         }
-        */
+
+        return $next($request);
     }
 }

@@ -2,7 +2,7 @@
 @section('title', 'Add New Role')
 @section ('breadcrumb')
 <li class="breadcrumb-item"><a href="{{ route('admin-dashboard-home') }}">Dashboard</a></li>
-<li class="breadcrumb-item"><a href="{{ route('admin.roles.index') }}">Roles</a></li>
+<li class="breadcrumb-item"><a href="{{ route('admin-roles-index') }}">Roles</a></li>
 <li class="breadcrumb-item active">Add New Role</li>
 @endsection
 @section('content')
@@ -13,7 +13,7 @@
                 <div class="card-header">
                     <h3 class="card-title">Add New Role</h3>
                     <div class="card-tools">
-                        <a href="{{ route('admin.roles.index') }}" class="btn btn-default">
+                        <a href="{{ route('admin-roles-index') }}" class="btn btn-default">
                             <i class="fas fa-arrow-right"></i> Back
                         </a>
                     </div>
@@ -29,7 +29,7 @@
                     </div>
                     @endif
 
-                    <form action="{{ route('admin.roles.store') }}" method="POST">
+                    <form action="{{ route('admin-roles-store') }}" method="POST">
                         @csrf
                         <div class="form-group">
                             <label for="name">اسم الدور</label>

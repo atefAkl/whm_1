@@ -9,35 +9,21 @@ use Spatie\Permission\Models\Permission;
 
 class AdminRoleAssignmentSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // تأكد من وجود المديرين
-        $superAdmin = Admin::findOrFail(1); // المدير الأول
-        $admin = Admin::findOrFail(2);      // المدير الثاني
+        // Get the super admin user
+        $superAdmin = Admin::where('email', 'admin@admin.com')->firstOrFail();
 
-        // تأكد من وجود الأدوار
+        // Get the super-admin role
         $superAdminRole = Role::where('name', 'super-admin')
             ->where('guard_name', 'admin')
             ->firstOrFail();
-            
-        $adminRole = Role::where('name', 'admin')
-            ->where('guard_name', 'admin')
-            ->firstOrFail();
 
-        // إزالة أي أدوار سابقة (للتأكد من عدم التكرار)
-        $superAdmin->syncRoles([]); 
-        $admin->syncRoles([]);
+        // Assign the role
+        $superAdmin->syncRoles([$superAdminRole]);
 
-        // تعيين الأدوار
-        $superAdmin->assignRole($superAdminRole);
-        $admin->assignRole($adminRole);
-
-        // إعطاء صلاحية manage-settings للمدير الثاني
-        $admin->givePermissionTo('manage-settings');
-
-        $this->command->info('تم تعيين الأدوار والصلاحيات للمديرين بنجاح');
+        // Assign all permissions
+        $permissions = Permission::all();
+        $superAdmin->syncPermissions($permissions);
     }
 }

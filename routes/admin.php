@@ -19,30 +19,28 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Guest routes (login)
-Route::middleware(['guest:admin', 'admin.guest'])->group(function () {
-    Route::get('auth/login', [LoginController::class, 'login'])->name('admin-login');
-    Route::post('auth/login/check', [LoginController::class, 'check'])->name('admin-check-info');
-});
 
 // Protected admin routes
 Route::middleware(['auth:admin'])->group(function () {
     // Dashboard
     Route::get('/dashboard/home', [DashboardController::class, 'index'])->name('admin-dashboard-home');
-    Route::get('/profile', [AdminsController::class, 'profile'])->name('admin-profile');
-    Route::post('/profile/update', [AdminsController::class, 'updateProfile'])->name('update-admin-profile');
-    Route::post('/logout', [LoginController::class, 'logout'])->name('admin-logout');
+    // Profile Management
+    Route::get('/profile',                  [AdminsController::class, 'profile'])->name('admin-profile');
+    Route::put('/profile/update',           [AdminsController::class, 'updateProfile'])->name('admin.profile.update');
+    Route::put('/profile/password',         [AdminsController::class, 'updatePassword'])->name('admin.password.update');
+    Route::put('/profile/settings',         [AdminsController::class, 'updateSettings'])->name('admin.settings.update');
+    Route::post('/admin/logout', [LoginController::class, 'logout'])->name('admin-logout');
 
     // Admins Management
     Route::middleware(['can:manage-admins'])->group(function () {
-        Route::get('/admins/index', [AdminsController::class, 'admins'])->name('admins-index');
-        Route::get('/admins/edit/{id}', [AdminsController::class, 'edit'])->name('edit-admin');
-        Route::get('/admins/settings/home', [AdminsController::class, 'settings'])->name('admins-settings-home');
-        Route::post('/admins/update/{id}', [AdminsController::class, 'update'])->name('update-admin');
-        Route::post('/admins/update-password/{id}', [AdminsController::class, 'updatePassword'])->name('update-admin-password');
-        Route::post('/admins/delete', [AdminsController::class, 'destroy'])->name('destroy-admin');
-        Route::get('/admins/get-roles/{id}', [AdminsController::class, 'getAdminRoles'])->name('admin-get-roles');
-        Route::post('/admins/assign-roles', [AdminsController::class, 'assignRoles'])->name('admin-assign-roles');
+        Route::get('/admins', [AdminsController::class, 'index'])->name('admins-index');
+        Route::get('/admins/create', [RegisterController::class, 'register'])->name('admins-create');
+        Route::post('/admins', [AdminsController::class, 'store'])->name('admins-store');
+        Route::get('/admins/{id}/edit', [AdminsController::class, 'edit'])->name('admins-edit');
+        Route::put('/admins/update/{id}', [AdminsController::class, 'update'])->name('admins-update');
+        Route::delete('/admins/delete/{id}', [AdminsController::class, 'destroy'])->name('admins-destroy');
+        Route::post('/admins/assign/roles/{id}', [AdminsController::class, 'dassignRoles'])->name('admin-assign-roles');
+        Route::put('/admins/{id}/toggle-status', [AdminsController::class, 'toggleStatus'])->name('admins-toggle-status');
     });
 
     // Settings Management
@@ -58,22 +56,26 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::post('/roles/store', [RolesController::class, 'store'])->name('admin-roles-store');
         Route::get('/roles/edit/{role}', [RolesController::class, 'edit'])->name('admin-roles-edit');
         Route::put('/roles/update/{role}', [RolesController::class, 'update'])->name('admin-roles-update');
-        Route::delete('/roles/delete/{role}', [RolesController::class, 'destroy'])->name('admin-roles-delete');
+        Route::delete('/roles/destroy/{role}', [RolesController::class, 'destroy'])->name('admin-roles-destroy');
     });
 
     // Permissions Management
     Route::middleware(['can:manage-permissions'])->group(function () {
         Route::get('/permissions', [PermissionsController::class, 'index'])->name('admin-permissions-index');
         Route::get('/permissions/create', [PermissionsController::class, 'create'])->name('admin-permissions-create');
+        Route::get('/permissions/getById/{id}', [PermissionsController::class, 'getById'])->name('admin-permissions-getById');
         Route::post('/permissions/store', [PermissionsController::class, 'store'])->name('admin-permissions-store');
         Route::get('/permissions/edit/{permission}', [PermissionsController::class, 'edit'])->name('admin-permissions-edit');
         Route::put('/permissions/update/{permission}', [PermissionsController::class, 'update'])->name('admin-permissions-update');
-        Route::delete('/permissions/delete/{permission}', [PermissionsController::class, 'destroy'])->name('admin-permissions-delete');
+        Route::delete('/permissions/delete/{permission}', [PermissionsController::class, 'destroy'])->name('admin-permissions-destroy');
     });
 
-    // Admin registration (requires special permission)
-    Route::middleware(['auth:admin', 'can:register-admins'])->group(function () {
-        Route::get('auth/register', [RegisterController::class, 'register'])->name('admin-register');
-        Route::post('auth/store', [RegisterController::class, 'store'])->name('admin-store');
-    });
+
+    Route::get('/logs/all', [AdminLogController::class, 'show'])
+        ->name('admin-logs')
+        ->middleware('can:view-system-logs');
+
+    Route::get('/logs/{file}', [AdminLogController::class, 'show'])
+        ->name('admin-log-view')
+        ->middleware('can:view-system-logs');
 });

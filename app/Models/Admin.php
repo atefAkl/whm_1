@@ -12,8 +12,9 @@ use Spatie\Permission\Traits\HasRoles;
  * Class Admin
  * @package App\Models
  * 
- * Represents an admin user in the system.
+ * Represents a user in the system.
  * Handles authentication, permissions, and relationships.
+ * Can be either a regular user or an admin based on roles.
  * 
  * @property int $id
  * @property string $name
@@ -32,13 +33,6 @@ use Spatie\Permission\Traits\HasRoles;
 class Admin extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
-
-    /**
-     * The guard for the admin model.
-     *
-     * @var string
-     */
-    protected $guard = 'admin';
 
     /**
      * The table associated with the model.
@@ -81,7 +75,7 @@ class Admin extends Authenticatable
     ];
 
     /**
-     * Get the admin who created this admin.
+     * Get the user who created this user.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -90,13 +84,31 @@ class Admin extends Authenticatable
         return $this->belongsTo(Admin::class, 'created_by');
     }
 
+    public function permissions()
+    {
+        return $this->hasMany(Permission::class, 'group_name', 'name');
+    }
+
     /**
-     * Get the admin who last updated this admin.
+     * Get the user who last updated this user.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function updater()
     {
         return $this->belongsTo(Admin::class, 'updated_by');
+    }
+
+    /**
+     * Get the orders for the user.
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'user_id');
+    }
+
+    public function profile()
+    {
+        return $this->hasOne(AdminProfile::class, 'admin_id');
     }
 }

@@ -3,7 +3,7 @@
 @section('content')
 <div class="container pt-3">
     <div class="profile-edit">
-
+        {{$admin}}
 
         <section class="bg-light p-3 shadowed mt-4">
 
@@ -26,7 +26,6 @@
                     <button type="submit" class="btn btn-primary">Update</button>
                 </div>
             </form>
-        </section>
         </section>
 
         <section class="bg-light p-3 shadowed mt-4">

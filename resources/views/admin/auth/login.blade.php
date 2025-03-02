@@ -60,13 +60,39 @@
             <div class="col-md-6">
                 <div class="login-form-section">
                     <h2 class="text-center mb-4">Admin Log in</h2>
-                    <form method="POST" action="{{ route('admin-check-info') }}">
+                    <form method="POST" action="{{ route('admin-check-info') }}" novalidate>
                         @csrf
+                        <input type="hidden" name="guard_name" value="admin">
+                        
+                        @if($errors->any())
+                        <div class="alert alert-danger mb-3">
+                            <ul class="mb-0 list-unstyled">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif
+
+                        @if(session('error'))
+                        <div class="alert alert-danger mb-3">
+                            {{ session('error') }}
+                        </div>
+                        @endif
+
+                        @if(session('status'))
+                        <div class="alert alert-success mb-3">
+                            {{ session('status') }}
+                        </div>
+                        @endif
+
                         <div class="mb-3">
+                            <label for="email" class="form-label">{{ __('Email Address') }}</label>
                             <input type="email"
+                                id="email"
                                 class="form-control @error('email') is-invalid @enderror"
                                 name="email"
-                                placeholder="Email Address"
+                                placeholder="{{ __('Enter your email') }}"
                                 value="{{ old('email') }}"
                                 required
                                 autofocus>
@@ -76,11 +102,14 @@
                             </span>
                             @enderror
                         </div>
+
                         <div class="mb-3">
+                            <label for="password" class="form-label">{{ __('Password') }}</label>
                             <input type="password"
+                                id="password"
                                 class="form-control @error('password') is-invalid @enderror"
                                 name="password"
-                                placeholder="Password"
+                                placeholder="{{ __('Enter your password') }}"
                                 required>
                             @error('password')
                             <span class="invalid-feedback" role="alert">
@@ -88,19 +117,16 @@
                             </span>
                             @enderror
                         </div>
+
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="remember">Remember me</label>
+                                <label class="form-check-label" for="remember">{{ __('Remember me') }}</label>
                             </div>
-                            <a href="#" class="text-decoration-none">Forgot Password?</a>
+                            <a href="{{ route('password.request') }}" class="text-decoration-none">{{ __('Forgot Password?') }}</a>
                         </div>
-                        @if(session('error'))
-                        <div class="alert alert-danger mb-3">
-                            {{ session('error') }}
-                        </div>
-                        @endif
-                        <button type="submit" class="btn-signin mb-3">Sign in</button>
+
+                        <button type="submit" class="btn-signin mb-3">{{ __('Sign in') }}</button>
                         <div class="text-center">
                             <small>Don't have an account? <a href="{{ route('admin-register') }}" class="text-decoration-none">Sign up</a></small>
                             <small>Not an admin? <a href="{{ route('login') }}" class="text-decoration-none">Users Login</a></small>

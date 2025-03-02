@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Permission;
+use App\Models\Permission;
 
 class PermissionsController extends Controller
 {
@@ -15,8 +15,9 @@ class PermissionsController extends Controller
      */
     public function index()
     {
-        $permissions = Permission::all();
-        return view('admin.permissions.index', compact('permissions'));
+        // select all permissions group by group name
+        $groupedPermissions = Permission::all()->groupBy('group_name');
+        return view('admin.permissions.index', compact('groupedPermissions'));
     }
 
     /**
@@ -26,7 +27,8 @@ class PermissionsController extends Controller
      */
     public function create()
     {
-        return view('admin.permissions.create');
+        $groups = Permission::groups();
+        return view('admin.permissions.create', compact('groups'));
     }
 
     /**
@@ -60,7 +62,14 @@ class PermissionsController extends Controller
      */
     public function edit(Permission $permission)
     {
-        return view('admin.permissions.edit', compact('permission'));
+        $groups = Permission::groups();
+        $guards = Permission::distinct('guard_name')->pluck('guard_name');
+        return view('admin.permissions.edit', compact('permission', 'groups', 'guards'));
+    }
+
+    public function getById($id)
+    {
+        return Permission::findOrFail($id);
     }
 
     /**
@@ -74,17 +83,21 @@ class PermissionsController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:permissions,name,' . $permission->id,
+            'guard_name' => 'required|string|max:50',
+            'group_name' => 'required|string|max:50',
             'description' => 'nullable|string|max:255'
         ]);
-
-        $permission->update([
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null
-        ]);
-
-        return redirect()->route('admin.permissions.index')
-            ->with('success', 'تم تحديث الصلاحية بنجاح');
+        $validated['updated_by'] = auth()->guard('admin')->user()->id;
+        try {
+            $permission->update($validated);
+            return redirect()->back()
+                ->with('success', 'تم تحديث الصلاحية بنجاح');
+        } catch (\Throwable $th) {
+            //throw $th;
+            return redirect()->back()->withInput()->with('error', 'حدث خطأ ما');
+        }
     }
+
 
     /**
      * Remove the specified permission from storage.
